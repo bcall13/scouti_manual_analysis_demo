@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCOUTi — Pitch Control Analyst</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">SCOUT<span>i</span></div>
+  <div class="header-badge">PITCH CONTROL · ANALYST v0.1</div>
+  <div class="header-right">
+    <div class="player-selector">
+      <label>PLAYER</label>
+      <input type="text" id="player-name" placeholder="Enter name..." />
+    </div>
+    <select id="position-select">
+      <option value="winger">Winger</option>
+    </select>
+    <button class="session-btn" onclick="saveSession()">↓ Save Session</button>
+    <button class="clear-btn" onclick="clearAll()">✕ Clear</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="panel-label"><span class="dot"></span>Match Footage</div>
+
+    <div class="video-area" id="video-area" onclick="triggerUpload()">
+      <input type="file" id="file-input" accept="video/*" onchange="loadVideo(event)">
+      <div class="upload-zone" id="upload-zone">
+        <div class="upload-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+        </div>
+        <h3>Upload Match Footage</h3>
+        <p>Drop a Veo recording or any video file<br>to begin your analysis session</p>
+        <span>MP4 · MOV · AVI · WebM</span>
+      </div>
+      <video id="video-player" controls></video>
+      <div class="video-overlay-badge" id="recording-badge">● LIVE</div>
+      <div class="timestamp-badge" id="timestamp-badge">00:00</div>
+    </div>
+
+    <div class="pitch-section">
+      <div class="panel-label"><span class="dot green"></span>Pitch Control Map — click to plot player position</div>
+      <div class="pitch-container">
+        <div class="pitch-wrap">
+          <canvas id="pitch-canvas" width="320" height="200"></canvas>
+        </div>
+        <div class="pitch-sidebar">
+          <div class="pitch-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Ideal zone</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Partial zone</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Out of position</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(59,130,246,0.6);border:1px solid #3b82f6"></div>Winger ideal</div>
+          </div>
+          <div class="pitch-stats">
+            <div class="pitch-stat"><strong id="stat-total">0</strong>points plotted</div>
+            <div class="pitch-stat"><strong id="stat-ideal">0%</strong>ideal zone</div>
+            <div class="pitch-stat"><strong id="stat-control">—</strong>map score</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="score-block">
+      <div class="score-ring-wrap">
+        <svg id="score-ring" width="90" height="90" viewBox="0 0 90 90">
+          <circle cx="45" cy="45" r="36" fill="none" stroke="#1e2a38" stroke-width="7"/>
+          <circle id="score-arc" cx="45" cy="45" r="36" fill="none" stroke="#2563eb" stroke-width="7"
+            stroke-linecap="round" stroke-dasharray="226.2" stroke-dashoffset="226.2"
+            style="transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1), stroke 0.4s;"/>
+        </svg>
+        <div class="score-center">
+          <div id="score-display">—</div>
+          <div class="score-label">/100</div>
+        </div>
+      </div>
+      <div class="score-meta">
+        <h2>PITCH CONTROL<br>SCORE</h2>
+        <div class="player-display" id="player-display">No player selected</div>
+        <div class="score-breakdown">
+          <div class="sb-row">
+            <div class="sb-label">Zone coverage</div>
+            <div class="sb-bar-wrap"><div class="sb-bar" id="bar-zone" style="width:0%;background:var(--green)"></div></div>
+            <div class="sb-val" id="val-zone">—</div>
+          </div>
+          <div class="sb-row">
+            <div class="sb-label">Positioning</div>
+            <div class="sb-bar-wrap"><div class="sb-bar" id="bar-pos" style="width:0%;background:var(--blue-light)"></div></div>
+            <div class="sb-val" id="val-pos">—</div>
+          </div>
+          <div class="sb-row">
+            <div class="sb-label">Spatial dominance</div>
+            <div class="sb-bar-wrap"><div class="sb-bar" id="bar-spatial" style="width:0%;background:var(--cyan)"></div></div>
+            <div class="sb-val" id="val-spatial">—</div>
+          </div>
+          <div class="sb-row">
+            <div class="sb-label">Transition</div>
+            <div class="sb-bar-wrap"><div class="sb-bar" id="bar-trans" style="width:0%;background:var(--amber)"></div></div>
+            <div class="sb-val" id="val-trans">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="criteria-section">
+      <div class="section-title">Scoring Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-item">
+          <div class="criteria-num">01</div>
+          <div class="criteria-content">
+            <div class="criteria-name">Territorial zone occupation</div>
+            <div class="criteria-desc">Does the player consistently operate in high-value wide channels and half-spaces?</div>
+          </div>
+          <div class="criteria-score-wrap">
+            <input type="number" class="criteria-score" min="0" max="10" placeholder="—" id="c0" oninput="updateScores()">
+            <div class="score-denom">/10</div>
+          </div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-num">02</div>
+          <div class="criteria-content">
+            <div class="criteria-name">Opponent-relative positioning</div>
+            <div class="criteria-desc">How well does the player position relative to the opposing fullback and central defenders?</div>
+          </div>
+          <div class="criteria-score-wrap">
+            <input type="number" class="criteria-score" min="0" max="10" placeholder="—" id="c1" oninput="updateScores()">
+            <div class="score-denom">/10</div>
+          </div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-num">03</div>
+          <div class="criteria-content">
+            <div class="criteria-name">Dominant area vs. dead zones</div>
+            <div class="criteria-desc">Does the player avoid congested zones and find pockets of space to receive?</div>
+          </div>
+          <div class="criteria-score-wrap">
+            <input type="number" class="criteria-score" min="0" max="10" placeholder="—" id="c2" oninput="updateScores()">
+            <div class="score-denom">/10</div>
+          </div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-num">04</div>
+          <div class="criteria-content">
+            <div class="criteria-name">Movement into space</div>
+            <div class="criteria-desc">Quality and frequency of runs — behind the line, diagonal cuts, channel-stretching movement.</div>
+          </div>
+          <div class="criteria-score-wrap">
+            <input type="number" class="criteria-score" min="0" max="10" placeholder="—" id="c3" oninput="updateScores()">
+            <div class="score-denom">/10</div>
+          </div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-num">05</div>
+          <div class="criteria-content">
+            <div class="criteria-name">Transition behavior</div>
+            <div class="criteria-desc">How quickly does the player claim or vacate space during transitions — offensive and defensive.</div>
+          </div>
+          <div class="criteria-score-wrap">
+            <input type="number" class="criteria-score" min="0" max="10" placeholder="—" id="c4" oninput="updateScores()">
+            <div class="score-denom">/10</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes-section">
+      <div class="section-title">Analyst Notes</div>
+      <textarea id="analyst-notes" placeholder="Freeform observations — timestamp specific moments, patterns, outliers..."></textarea>
+    </div>
+
+    <div class="ai-section">
+      <div class="ai-header">
+        <div class="section-title" style="margin:0">AI Coaching Recommendation</div>
+        <button class="ai-generate-btn" id="ai-btn" onclick="generateAIRecommendation()">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+          Generate
+        </button>
+      </div>
+      <div class="ai-output" id="ai-output">
+        <span class="ai-empty">Score at least 3 criteria and plot 5+ positions, then generate a recommendation.</span>
+      </div>
+    </div>
+
+    <div class="log-section">
+      <div class="section-title">Position Log</div>
+      <div class="log-list" id="log-list">
+        <div class="log-empty">No positions plotted yet. Click on the pitch map to begin.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="pitch.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
