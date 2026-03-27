@@ -30,23 +30,35 @@
   <div class="left-panel">
     <div class="panel-label"><span class="dot"></span>Match Footage</div>
 
-    <div class="video-area" id="video-area" onclick="triggerUpload()">
-      <input type="file" id="file-input" accept="video/*" onchange="loadVideo(event)">
+    <!-- YouTube URL input -->
+    <div class="yt-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="var(--text3)"/></svg>
+      <input type="text" id="yt-url" placeholder="Paste YouTube URL — e.g. https://youtube.com/watch?v=..." />
+      <button onclick="loadYouTube()">Load</button>
+    </div>
+
+    <!-- Video embed area -->
+    <div class="video-area" id="video-area">
       <div class="upload-zone" id="upload-zone">
         <div class="upload-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/>
+            <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/>
           </svg>
         </div>
-        <h3>Upload Match Footage</h3>
-        <p>Drop a Veo recording or any video file<br>to begin your analysis session</p>
-        <span>MP4 · MOV · AVI · WebM</span>
+        <h3>Paste a YouTube URL above</h3>
+        <p>Match footage will embed here.<br>Use unlisted YouTube links for private clips.</p>
+        <span>Works with any public or unlisted YouTube video</span>
       </div>
-      <video id="video-player" controls></video>
-      <div class="video-overlay-badge" id="recording-badge">● LIVE</div>
-      <div class="timestamp-badge" id="timestamp-badge">00:00</div>
+      <iframe
+        id="yt-embed"
+        style="display:none;width:100%;height:100%;border:none;"
+        allowfullscreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+      </iframe>
     </div>
 
+    <!-- Pitch heatmap -->
     <div class="pitch-section">
       <div class="panel-label"><span class="dot green"></span>Pitch Control Map — click to plot player position</div>
       <div class="pitch-container">
@@ -58,13 +70,14 @@
             <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Ideal zone</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Partial zone</div>
             <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Out of position</div>
-            <div class="legend-item"><div class="legend-dot" style="background:rgba(59,130,246,0.6);border:1px solid #3b82f6"></div>Winger ideal</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(59,130,246,0.5);border:1px solid #3b82f6"></div>Winger ideal</div>
           </div>
           <div class="pitch-stats">
-            <div class="pitch-stat"><strong id="stat-total">0</strong>points plotted</div>
+            <div class="pitch-stat"><strong id="stat-total">0</strong>plotted</div>
             <div class="pitch-stat"><strong id="stat-ideal">0%</strong>ideal zone</div>
             <div class="pitch-stat"><strong id="stat-control">—</strong>map score</div>
           </div>
+          <button class="undo-btn" onclick="undoLast()">↩ Undo last</button>
         </div>
       </div>
     </div>
@@ -73,6 +86,7 @@
   <!-- RIGHT PANEL -->
   <div class="right-panel">
 
+    <!-- Score -->
     <div class="score-block">
       <div class="score-ring-wrap">
         <svg id="score-ring" width="90" height="90" viewBox="0 0 90 90">
@@ -114,9 +128,11 @@
       </div>
     </div>
 
+    <!-- Criteria -->
     <div class="criteria-section">
       <div class="section-title">Scoring Criteria</div>
       <div class="criteria-grid">
+
         <div class="criteria-item">
           <div class="criteria-num">01</div>
           <div class="criteria-content">
@@ -128,6 +144,7 @@
             <div class="score-denom">/10</div>
           </div>
         </div>
+
         <div class="criteria-item">
           <div class="criteria-num">02</div>
           <div class="criteria-content">
@@ -139,6 +156,7 @@
             <div class="score-denom">/10</div>
           </div>
         </div>
+
         <div class="criteria-item">
           <div class="criteria-num">03</div>
           <div class="criteria-content">
@@ -150,6 +168,7 @@
             <div class="score-denom">/10</div>
           </div>
         </div>
+
         <div class="criteria-item">
           <div class="criteria-num">04</div>
           <div class="criteria-content">
@@ -161,6 +180,7 @@
             <div class="score-denom">/10</div>
           </div>
         </div>
+
         <div class="criteria-item">
           <div class="criteria-num">05</div>
           <div class="criteria-content">
@@ -172,27 +192,17 @@
             <div class="score-denom">/10</div>
           </div>
         </div>
+
       </div>
     </div>
 
+    <!-- Notes -->
     <div class="notes-section">
       <div class="section-title">Analyst Notes</div>
-      <textarea id="analyst-notes" placeholder="Freeform observations — timestamp specific moments, patterns, outliers..."></textarea>
+      <textarea id="analyst-notes" placeholder="Freeform observations — patterns, timestamps, specific moments to revisit..."></textarea>
     </div>
 
-    <div class="ai-section">
-      <div class="ai-header">
-        <div class="section-title" style="margin:0">AI Coaching Recommendation</div>
-        <button class="ai-generate-btn" id="ai-btn" onclick="generateAIRecommendation()">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
-          Generate
-        </button>
-      </div>
-      <div class="ai-output" id="ai-output">
-        <span class="ai-empty">Score at least 3 criteria and plot 5+ positions, then generate a recommendation.</span>
-      </div>
-    </div>
-
+    <!-- Position log -->
     <div class="log-section">
       <div class="section-title">Position Log</div>
       <div class="log-list" id="log-list">
@@ -203,7 +213,6 @@
   </div>
 </div>
 
-<script src="config.js"></script>
 <script src="pitch.js"></script>
 <script src="app.js"></script>
 </body>
