@@ -7,7 +7,7 @@ const ctx = canvas.getContext('2d');
 const W = canvas.width;
 const H = canvas.height;
 
-// Winger ideal zones — wide channels and half-spaces (both sides)
+// Winger ideal zones — wide channels + half-spaces, both sides
 const IDEAL_ZONES = [
   { x: 0.02, y: 0.08, w: 0.22, h: 0.55 },  // Left wide channel
   { x: 0.76, y: 0.08, w: 0.22, h: 0.55 },  // Right wide channel
@@ -34,7 +34,7 @@ function drawPitch(points) {
   ctx.roundRect(0, 0, W, H, 4);
   ctx.fill();
 
-  // Stripe pattern
+  // Alternating stripe
   for (let i = 0; i < 8; i++) {
     ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.012)' : 'rgba(255,255,255,0.024)';
     ctx.fillRect(i * (W / 8), 0, W / 8, H);
@@ -51,11 +51,9 @@ function drawPitch(points) {
     ctx.stroke();
   }
 
-  // Pitch markings
+  // Pitch lines
   ctx.strokeStyle = 'rgba(255,255,255,0.15)';
   ctx.lineWidth = 1;
-
-  // Outline
   ctx.strokeRect(4, 4, W - 8, H - 8);
 
   // Halfway line
@@ -68,7 +66,6 @@ function drawPitch(points) {
   ctx.beginPath();
   ctx.arc(W / 2, H / 2, 22, 0, Math.PI * 2);
   ctx.stroke();
-
   ctx.beginPath();
   ctx.arc(W / 2, H / 2, 2, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
@@ -87,18 +84,17 @@ function drawPitch(points) {
 
   // Heatmap blobs
   for (const pt of points) {
-    const r = 22;
-    const grad = ctx.createRadialGradient(pt.px, pt.py, 0, pt.px, pt.py, r);
+    const grad = ctx.createRadialGradient(pt.px, pt.py, 0, pt.px, pt.py, 22);
     const col = pt.zone === 'ideal' ? '16,185,129' : pt.zone === 'partial' ? '245,158,11' : '239,68,68';
     grad.addColorStop(0, `rgba(${col},0.35)`);
     grad.addColorStop(1, `rgba(${col},0)`);
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(pt.px, pt.py, r, 0, Math.PI * 2);
+    ctx.arc(pt.px, pt.py, 22, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Point dots
+  // Dots
   for (const pt of points) {
     const col = pt.zone === 'ideal' ? '#10b981' : pt.zone === 'partial' ? '#f59e0b' : '#ef4444';
     ctx.beginPath();
