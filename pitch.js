@@ -8,15 +8,30 @@ const W = canvas.width;
 const H = canvas.height;
 
 // Winger ideal zones — wide channels + half-spaces, both sides
-const IDEAL_ZONES = [
+const ZONES_WINGER = [
   { x: 0.02, y: 0.08, w: 0.22, h: 0.55 },  // Left wide channel
   { x: 0.76, y: 0.08, w: 0.22, h: 0.55 },  // Right wide channel
   { x: 0.18, y: 0.08, w: 0.22, h: 0.40 },  // Left half-space
   { x: 0.60, y: 0.08, w: 0.22, h: 0.40 },  // Right half-space
 ];
 
+// Central mid ideal zones — central corridor, half-spaces centrally, press zones
+const ZONES_CM = [
+  { x: 0.30, y: 0.08, w: 0.40, h: 0.30 },  // Central attacking third — between lines
+  { x: 0.22, y: 0.22, w: 0.20, h: 0.30 },  // Left central half-space
+  { x: 0.58, y: 0.22, w: 0.20, h: 0.30 },  // Right central half-space
+  { x: 0.28, y: 0.38, w: 0.44, h: 0.22 },  // Central midfield press zone
+];
+
+function getZones() {
+  const pos = document.getElementById('position-select')
+    ? document.getElementById('position-select').value
+    : 'winger';
+  return pos === 'cm' ? ZONES_CM : ZONES_WINGER;
+}
+
 function classifyZone(nx, ny) {
-  for (const z of IDEAL_ZONES) {
+  for (const z of getZones()) {
     if (nx >= z.x && nx <= z.x + z.w && ny >= z.y && ny <= z.y + z.h) {
       return 'ideal';
     }
@@ -26,6 +41,16 @@ function classifyZone(nx, ny) {
 }
 
 function drawPitch(points) {
+  const zones = getZones();
+  const pos = document.getElementById('position-select')
+    ? document.getElementById('position-select').value
+    : 'winger';
+  const zoneLabel = pos === 'cm' ? 'CM ideal' : 'Winger ideal';
+
+  // Update legend label dynamically
+  const legendZoneEl = document.getElementById('legend-zone-label');
+  if (legendZoneEl) legendZoneEl.textContent = zoneLabel;
+
   ctx.clearRect(0, 0, W, H);
 
   // Background
@@ -44,7 +69,7 @@ function drawPitch(points) {
   ctx.fillStyle = 'rgba(59,130,246,0.07)';
   ctx.strokeStyle = 'rgba(59,130,246,0.2)';
   ctx.lineWidth = 0.5;
-  for (const z of IDEAL_ZONES) {
+  for (const z of zones) {
     ctx.beginPath();
     ctx.roundRect(z.x * W, z.y * H, z.w * W, z.h * H, 2);
     ctx.fill();
