@@ -8,6 +8,44 @@ const state = {
   logCount: 0
 };
 
+// ── POSITION SELECTOR ─────────────────────────
+
+const CRITERIA_DESC = {
+  winger: [
+    "Does the player consistently operate in high-value wide channels and half-spaces?",
+    "How well does the player position relative to the opposing fullback and central defenders?",
+    "Does the player avoid congested zones and find pockets of space to receive?",
+    "Quality and frequency of runs — behind the line, diagonal cuts, channel-stretching movement.",
+    "How quickly does the player claim or vacate space during transitions — offensive and defensive."
+  ],
+  cm: [
+    "Does the player consistently occupy the central corridor and half-spaces between the lines?",
+    "How well does the player position relative to the opposing midfield block and defensive line?",
+    "Does the player find and hold pockets of space centrally, avoiding congested zones?",
+    "Quality of movement to receive — dropping, turning, third-man runs into attacking areas.",
+    "How quickly does the player press, cover, or shift shape when possession changes."
+  ]
+};
+
+document.getElementById('position-select').addEventListener('change', () => {
+  const pos = document.getElementById('position-select').value;
+
+  // Update criteria descriptions
+  const descs = CRITERIA_DESC[pos] || CRITERIA_DESC.winger;
+  document.querySelectorAll('.criteria-desc').forEach((el, i) => {
+    if (descs[i]) el.textContent = descs[i];
+  });
+
+  // Reclassify all existing points under new zone config
+  state.points = state.points.map(p => ({
+    ...p,
+    zone: classifyZone(p.nx, p.ny)
+  }));
+  drawPitch(state.points);
+  updatePitchStats();
+  updateOverallScore();
+});
+
 // ── YOUTUBE ────────────────────────────────────
 
 function extractYouTubeID(url) {
@@ -184,7 +222,11 @@ function updateOverallScore() {
 
   // Player label
   const name = document.getElementById('player-name').value || 'Unnamed Player';
-  document.getElementById('player-display').textContent = name + ' · Winger';
+  const posEl = document.getElementById('position-select');
+  const posLabel = posEl
+    ? (posEl.value === 'cm' ? 'Central Mid' : 'Winger')
+    : 'Winger';
+  document.getElementById('player-display').textContent = name + ' · ' + posLabel;
 }
 
 document.getElementById('player-name').addEventListener('input', updateOverallScore);
@@ -193,9 +235,13 @@ document.getElementById('player-name').addEventListener('input', updateOverallSc
 
 function saveSession() {
   const name = document.getElementById('player-name').value || 'unnamed';
+  const posEl = document.getElementById('position-select');
+  const posLabel = posEl
+    ? (posEl.value === 'cm' ? 'Central Mid' : 'Winger')
+    : 'Winger';
   const data = {
     player:   name,
-    position: 'Winger',
+    position: posLabel,
     date:     new Date().toISOString(),
     ytUrl:    document.getElementById('yt-url').value,
     points:   state.points,
