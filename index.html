@@ -15,10 +15,12 @@
     <div class="player-selector">
       <label>PLAYER</label>
       <input type="text" id="player-name" placeholder="Enter name..." />
+      <div class="selector-divider"></div>
+      <label>#</label>
+      <input type="text" id="player-number" placeholder="00" style="width:36px;text-align:center;" />
     </div>
     <select id="position-select">
       <option value="winger">Winger</option>
-      <option value="cm">Central Mid</option>
     </select>
     <button class="session-btn" onclick="saveSession()">↓ Save Session</button>
     <button class="clear-btn" onclick="clearAll()">✕ Clear</button>
@@ -71,7 +73,7 @@
             <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Ideal zone</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Partial zone</div>
             <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Out of position</div>
-            <div class="legend-item"><div class="legend-dot" style="background:rgba(59,130,246,0.5);border:1px solid #3b82f6"></div><span id="legend-zone-label">Winger ideal</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(59,130,246,0.5);border:1px solid #3b82f6"></div>Winger ideal</div>
           </div>
           <div class="pitch-stats">
             <div class="pitch-stat"><strong id="stat-total">0</strong>plotted</div>
