@@ -100,6 +100,13 @@ header {
   outline: none;
 }
 
+.selector-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border2);
+  flex-shrink: 0;
+}
+
 #position-select {
   background: var(--surface2);
   border: 1px solid var(--border2);
@@ -189,8 +196,14 @@ header {
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
+
+.left-panel::-webkit-scrollbar { width: 4px; }
+.left-panel::-webkit-scrollbar-track { background: transparent; }
+.left-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
 .panel-label {
   font-family: var(--mono);
@@ -218,13 +231,13 @@ header {
 /* Video area */
 .video-area {
   flex: 1;
+  min-height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #050810;
   position: relative;
   overflow: hidden;
-  min-height: 0;
 }
 
 .upload-zone {
@@ -252,7 +265,7 @@ header {
 
 /* Pitch section */
 .pitch-section {
-  height: 232px;
+  min-height: 240px;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
